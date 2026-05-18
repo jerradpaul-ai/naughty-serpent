@@ -5,32 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Naughty Serpent</title>
     <style>
-        body { margin:0; background:#1a0000; color:white; font-family:Arial; text-align:center; overflow:hidden; }
-        canvas { background:#330011; display:block; margin:10px auto; touch-action:none; border:3px solid #ff3366; box-shadow:0 0 20px #ff0000; }
+        body { margin:0; background:#0a0a00; color:white; font-family:Arial; text-align:center; overflow:hidden; }
+        canvas { background:#1a1a00; display:block; margin:10px auto; touch-action:none; border:3px solid #00ff88; box-shadow:0 0 25px #00cc66; }
         h1 { color:#ff3366; margin:10px; text-shadow:0 0 15px #ff0000; }
         #score { font-size:26px; color:#ffcc00; margin:5px; }
     </style>
 </head>
 <body>
-    <h1>🥃 Naughty Serpent 🥃</h1>
+    <h1>🌿🍸 Naughty Serpent 🌿🍸</h1>
     <div id="score">Pleasure Points: 0</div>
-    <canvas id="game" width="420" height="420"></canvas>
+    <canvas id="game" width="440" height="440"></canvas>
     <div style="font-size:14px; color:#aaa; margin-top:8px;">
-        Swipe to slither • Drink the shots • Feel the pleasure
+        Swipe • Chase the vodka • Puff puff pass
     </div>
 
 <script>
-// Adult Naughty Serpent - Shots & Provocative Snake
+// Super Adult Naughty Serpent - Vodka + Joint
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const scoreElement = document.getElementById("score");
 
-const grid = 21;
+const grid = 22;
 let count = 0;
 let score = 0;
 
 let snake = { x: 180, y: 180, dx: grid, dy: 0, cells: [], maxCells: 4 };
-let shot = { x: 300, y: 300 };
+let vodka = { x: 300, y: 300 };
 let gameOverFlag = false;
 
 let touchStartX = 0, touchStartY = 0;
@@ -42,18 +42,27 @@ function resetGame() {
     snake.dx = grid; snake.dy = 0;
     score = 0; scoreElement.textContent = "Pleasure Points: 0";
     gameOverFlag = false;
-    shot.x = getRandomInt(0, 19) * grid;
-    shot.y = getRandomInt(0, 19) * grid;
+    vodka.x = getRandomInt(0, 19) * grid;
+    vodka.y = getRandomInt(0, 19) * grid;
+}
+
+function drawWeedBackground() {
+    ctx.fillStyle = "rgba(0, 255, 80, 0.15)";
+    ctx.font = "20px Arial";
+    for (let i = 0; i < 12; i++) {
+        ctx.fillText("🍃", (i*37) % 440, 60 + (i*35) % 380);
+    }
 }
 
 function loop() {
     if (gameOverFlag) return;
     requestAnimationFrame(loop);
     count++;
-    if (count < 5) return;   // speed
+    if (count < 5) return;
     count = 0;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawWeedBackground();
 
     snake.x += snake.dx;
     snake.y += snake.dy;
@@ -66,37 +75,42 @@ function loop() {
     snake.cells.unshift({ x: snake.x, y: snake.y });
     if (snake.cells.length > snake.maxCells) snake.cells.pop();
 
-    // Provocative glossy snake
+    // Glossy provocative snake with joint
     for (let i = 0; i < snake.cells.length; i++) {
         const cell = snake.cells[i];
-        const grad = ctx.createLinearGradient(cell.x, cell.y, cell.x + grid, cell.y + grid/2);
-        grad.addColorStop(0, i === 0 ? "#ff69b4" : "#c71585");
+        const grad = ctx.createLinearGradient(cell.x, cell.y, cell.x+grid, cell.y+grid);
+        grad.addColorStop(0, "#c71585");
         grad.addColorStop(1, "#8b008b");
         ctx.fillStyle = grad;
         ctx.fillRect(cell.x, cell.y, grid-1, grid-1);
 
-        if (i === 0) { // suggestive head
+        if (i === 0) { // head + joint
             ctx.fillStyle = "#ff1493";
-            ctx.fillRect(cell.x + 5, cell.y + 5, 11, 11);
+            ctx.fillRect(cell.x + 4, cell.y + 5, 14, 12);
+            // joint
+            ctx.fillStyle = "#8b4513";
+            ctx.fillRect(cell.x + 16, cell.y + 8, 10, 3);
+            ctx.fillStyle = "#ffaa00";
+            ctx.fillRect(cell.x + 24, cell.y + 7, 4, 5); // lit end
         }
     }
 
-    // Glowing shot
-    ctx.fillStyle = "#ff4500";
-    ctx.fillRect(shot.x + 4, shot.y + 4, grid-8, grid-10);
-    ctx.fillStyle = "#ffd700";
-    ctx.fillRect(shot.x + 8, shot.y + 7, grid-16, 7); // liquid shine
+    // Vodka bottle
+    ctx.fillStyle = "#ffcc00";
+    ctx.fillRect(vodka.x + 5, vodka.y + 3, grid-10, grid-6); // bottle
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(vodka.x + 8, vodka.y + 8, grid-16, 6); // label
 
-    // Eat shot
-    if (snake.x === shot.x && snake.y === shot.y) {
+    // Eat vodka
+    if (snake.x === vodka.x && snake.y === vodka.y) {
         snake.maxCells++;
-        score += 15;
+        score += 20;
         scoreElement.textContent = `Pleasure Points: ${score}`;
-        shot.x = getRandomInt(0, 19) * grid;
-        shot.y = getRandomInt(0, 19) * grid;
+        vodka.x = getRandomInt(0, 19) * grid;
+        vodka.y = getRandomInt(0, 19) * grid;
     }
 
-    // Self collision
+    // Collision
     for (let i = 1; i < snake.cells.length; i++) {
         if (snake.x === snake.cells[i].x && snake.y === snake.cells[i].y) {
             gameOverFlag = true;
@@ -104,15 +118,15 @@ function loop() {
             ctx.fillRect(0,0,canvas.width,canvas.height);
             ctx.fillStyle = "#ff3366";
             ctx.font = "bold 32px Arial";
-            ctx.fillText("Game Over 😈", 70, 180);
+            ctx.fillText("Game Over 😵‍💫", 65, 180);
             ctx.font = "20px Arial";
-            ctx.fillText(`You scored ${score} pleasure`, 75, 230);
-            ctx.fillText("Tap to play again", 100, 270);
+            ctx.fillText(`You got ${score} pleasure`, 80, 230);
+            ctx.fillText("Tap to blaze again", 95, 270);
         }
     }
 }
 
-// Keyboard
+// Controls (same as before)
 document.addEventListener("keydown", e => {
     if (gameOverFlag) { resetGame(); return; }
     if (e.key === "ArrowLeft" && snake.dx !== grid) { snake.dx = -grid; snake.dy = 0; }
@@ -121,7 +135,6 @@ document.addEventListener("keydown", e => {
     else if (e.key === "ArrowDown" && snake.dy !== -grid) { snake.dx = 0; snake.dy = grid; }
 });
 
-// Touch swipe
 canvas.addEventListener("touchstart", e => {
     if (gameOverFlag) { resetGame(); return; }
     touchStartX = e.changedTouches[0].screenX;
