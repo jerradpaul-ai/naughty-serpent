@@ -3,67 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Easy Flappy</title>
+    <title>Flappy Fantasy</title>
     <style>
-        body { margin:0; background:#5c94fc; text-align:center; color:white; font-family:Arial; }
+        body { margin:0; background:#5c94fc; text-align:center; color:white; font-family:Arial; overflow:hidden; }
         canvas { display:block; margin:10px auto; background:#71c5ee; border:5px solid white; }
     </style>
 </head>
 <body>
-    <h1>Easy Flappy 🐉</h1>
+    <h1>Flappy Fantasy 🐉</h1>
     <canvas id="game" width="400" height="600"></canvas>
-    <p style="font-size:18px;">Tap anywhere to flap</p>
+    <p style="font-size:18px;">Tap to flap • Avoid pipes</p>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let birdY = 300;
+let birdY = 250;
 let velocity = 0;
-const gravity = 0.5;
-const flapPower = -12;
+const gravity = 0.55;
+const flapPower = -12.5;
+
+let pipes = [];
+let score = 0;
+let gameRunning = true;
+let frame = 0;
+
+function reset() {
+    birdY = 250;
+    velocity = 0;
+    pipes = [{x: 350, top: 180}];
+    score = 0;
+    frame = 0;
+}
 
 function draw() {
     ctx.clearRect(0, 0, 400, 600);
-    
+
+    // Pipes
+    ctx.fillStyle = "#0b8e3d";
+    for (let p of pipes) {
+        ctx.fillRect(p.x, 0, 70, p.top);
+        ctx.fillRect(p.x, p.top + 180, 70, 600);
+    }
+
     // Bird
     ctx.fillStyle = "#00cc44";
-    ctx.fillRect(100, birdY, 45, 35);
-    
+    ctx.fillRect(80, birdY, 40, 32);
+
     // Score
     ctx.fillStyle = "white";
-    ctx.font = "bold 40px Arial";
-    ctx.fillText("Score: 0", 120, 80);
+    ctx.font = "bold 48px Arial";
+    ctx.fillText(score, 170, 80);
 }
 
 function update() {
+    if (!gameRunning) return;
+    frame++;
     velocity += gravity;
     birdY += velocity;
-    
-    if (birdY > 520) {
-        birdY = 300;
-        velocity = 0;
+
+    // Spawn pipes
+    if (frame % 85 === 0) {
+        const top = 100 + Math.random() * 220;
+        pipes.push({x: 420, top: top});
     }
-    if (birdY < 0) birdY = 0;
+
+    // Move pipes
+    for (let i = 0; i < pipes.length; i++) {
+        pipes[i].x -= 2.6;
+
+        // Score
+        if (pipes[i].x + 70 < 80 && !pipes[i].passed) {
+            pipes[i].passed = true;
+            score++;
+        }
+
+        // Collision
+        if (80 + 40 > pipes[i].x && 80 < pipes[i].x + 70) {
+            if (birdY < pipes[i].top || birdY + 32 > pipes[i].top + 180) {
+                gameOver();
+            }
+        }
+    }
+
+    if (pipes[0] && pipes[0].x < -80) pipes.shift();
+
+    if (birdY > 550 || birdY < 0) gameOver();
+}
+
+function gameOver() {
+    gameRunning = false;
+    alert("Game Over! Final Score: " + score + "\n\nTap OK to play again");
+    reset();
+    gameRunning = true;
 }
 
 function flap() {
-    velocity = flapPower;
+    if (gameRunning) velocity = flapPower;
 }
 
 canvas.addEventListener("click", flap);
-canvas.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    flap();
-});
+canvas.addEventListener("touchstart", e => { e.preventDefault(); flap(); });
 
-function gameLoop() {
+reset();
+setInterval(() => {
     update();
     draw();
-    requestAnimationFrame(gameLoop);
-}
-
-gameLoop();
+}, 20);
 </script>
 </body>
 </html>
