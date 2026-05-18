@@ -3,42 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Test</title>
+    <title>Easy Flappy</title>
     <style>
-        body { margin:0; background:#5c94fc; text-align:center; color:white; }
-        canvas { display:block; margin:20px auto; background:#71c5ee; border:4px solid white; }
+        body { margin:0; background:#5c94fc; text-align:center; color:white; font-family:Arial; }
+        canvas { display:block; margin:10px auto; background:#71c5ee; border:5px solid white; }
     </style>
 </head>
 <body>
-    <h1>Flappy Test 🐉</h1>
+    <h1>Easy Flappy 🐉</h1>
     <canvas id="game" width="400" height="600"></canvas>
-    <p>Tap the screen to flap</p>
+    <p style="font-size:18px;">Tap anywhere to flap</p>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let y = 300;
-let vel = 0;
+let birdY = 300;
+let velocity = 0;
+const gravity = 0.5;
+const flapPower = -12;
 
 function draw() {
     ctx.clearRect(0, 0, 400, 600);
+    
+    // Bird
     ctx.fillStyle = "#00cc44";
-    ctx.fillRect(80, y, 40, 30);
+    ctx.fillRect(100, birdY, 45, 35);
+    
+    // Score
+    ctx.fillStyle = "white";
+    ctx.font = "bold 40px Arial";
+    ctx.fillText("Score: 0", 120, 80);
 }
 
-function loop() {
-    vel += 0.6;
-    y += vel;
-    if (y > 550) y = 300, vel = 0;
+function update() {
+    velocity += gravity;
+    birdY += velocity;
+    
+    if (birdY > 520) {
+        birdY = 300;
+        velocity = 0;
+    }
+    if (birdY < 0) birdY = 0;
+}
+
+function flap() {
+    velocity = flapPower;
+}
+
+canvas.addEventListener("click", flap);
+canvas.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    flap();
+});
+
+function gameLoop() {
+    update();
     draw();
-    requestAnimationFrame(loop);
+    requestAnimationFrame(gameLoop);
 }
 
-canvas.addEventListener("click", () => vel = -13);
-canvas.addEventListener("touchstart", e => { e.preventDefault(); vel = -13; });
-
-loop();
+gameLoop();
 </script>
 </body>
 </html>
