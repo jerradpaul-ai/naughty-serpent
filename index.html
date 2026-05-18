@@ -6,156 +6,122 @@
     <title>Naughty Serpent</title>
     <style>
         body { margin:0; background:#1a0000; color:white; font-family:Arial; text-align:center; overflow:hidden; }
-        canvas { background:#330011; display:block; margin:10px auto; touch-action:none; }
-        h1 { color:#ff3366; margin:10px; text-shadow:0 0 10px #ff0000; }
-        #score { font-size:24px; color:#ffcc00; }
-        #instructions { font-size:14px; color:#aaa; margin-top:5px; }
+        canvas { background:#330011; display:block; margin:10px auto; touch-action:none; border:3px solid #ff3366; box-shadow:0 0 20px #ff0000; }
+        h1 { color:#ff3366; margin:10px; text-shadow:0 0 15px #ff0000; }
+        #score { font-size:26px; color:#ffcc00; margin:5px; }
     </style>
 </head>
 <body>
-    <h1>🍒 Naughty Serpent 🍒</h1>
+    <h1>🥃 Naughty Serpent 🥃</h1>
     <div id="score">Pleasure Points: 0</div>
-    <canvas id="game" width="400" height="400"></canvas>
-    <div id="instructions">
-        Swipe or use arrow keys • Eat cherries • Don't bite yourself<br>
-        <small>Works great on phone — just swipe!</small>
+    <canvas id="game" width="420" height="420"></canvas>
+    <div style="font-size:14px; color:#aaa; margin-top:8px;">
+        Swipe to slither • Drink the shots • Feel the pleasure
     </div>
 
 <script>
-// Naughty Serpent - Mobile-friendly Snake
+// Adult Naughty Serpent - Shots & Provocative Snake
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const scoreElement = document.getElementById("score");
 
-const grid = 20;
+const grid = 21;
 let count = 0;
 let score = 0;
 
-let snake = {
-    x: 160,
-    y: 160,
-    dx: grid,
-    dy: 0,
-    cells: [],
-    maxCells: 4
-};
-
-let cherry = {
-    x: 320,
-    y: 320
-};
-
+let snake = { x: 180, y: 180, dx: grid, dy: 0, cells: [], maxCells: 4 };
+let shot = { x: 300, y: 300 };
 let gameOverFlag = false;
 
-// Touch swipe support
-let touchStartX = 0;
-let touchStartY = 0;
+let touchStartX = 0, touchStartY = 0;
 
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min)) + min;
-}
+function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min)) + min; }
 
 function resetGame() {
-    snake.x = 160;
-    snake.y = 160;
-    snake.cells = [];
-    snake.maxCells = 4;
-    snake.dx = grid;
-    snake.dy = 0;
-    score = 0;
-    scoreElement.textContent = "Pleasure Points: 0";
+    snake.x = 180; snake.y = 180; snake.cells = []; snake.maxCells = 4;
+    snake.dx = grid; snake.dy = 0;
+    score = 0; scoreElement.textContent = "Pleasure Points: 0";
     gameOverFlag = false;
-    cherry.x = getRandomInt(0, 20) * grid;
-    cherry.y = getRandomInt(0, 20) * grid;
+    shot.x = getRandomInt(0, 19) * grid;
+    shot.y = getRandomInt(0, 19) * grid;
 }
 
 function loop() {
     if (gameOverFlag) return;
-
     requestAnimationFrame(loop);
     count++;
-
-    if (count < 6) return;  // Speed control (lower = faster)
+    if (count < 5) return;   // speed
     count = 0;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Move snake
     snake.x += snake.dx;
     snake.y += snake.dy;
 
-    // Wrap around edges (more fun)
     if (snake.x >= canvas.width) snake.x = 0;
     if (snake.x < 0) snake.x = canvas.width;
     if (snake.y >= canvas.height) snake.y = 0;
     if (snake.y < 0) snake.y = canvas.height;
 
-    // Add new head
     snake.cells.unshift({ x: snake.x, y: snake.y });
+    if (snake.cells.length > snake.maxCells) snake.cells.pop();
 
-    // Remove tail
-    if (snake.cells.length > snake.maxCells) {
-        snake.cells.pop();
-    }
+    // Provocative glossy snake
+    for (let i = 0; i < snake.cells.length; i++) {
+        const cell = snake.cells[i];
+        const grad = ctx.createLinearGradient(cell.x, cell.y, cell.x + grid, cell.y + grid/2);
+        grad.addColorStop(0, i === 0 ? "#ff69b4" : "#c71585");
+        grad.addColorStop(1, "#8b008b");
+        ctx.fillStyle = grad;
+        ctx.fillRect(cell.x, cell.y, grid-1, grid-1);
 
-    // Draw snake (sleek purple)
-    ctx.fillStyle = "#bb00ff";
-    snake.cells.forEach((cell, index) => {
-        ctx.fillRect(cell.x, cell.y, grid - 1, grid - 1);
-        // Glow on head
-        if (index === 0) {
-            ctx.fillStyle = "#ff66ff";
-            ctx.fillRect(cell.x + 4, cell.y + 4, 12, 12);
-            ctx.fillStyle = "#bb00ff";
+        if (i === 0) { // suggestive head
+            ctx.fillStyle = "#ff1493";
+            ctx.fillRect(cell.x + 5, cell.y + 5, 11, 11);
         }
-    });
-
-    // Draw cherry (seductive red)
-    ctx.fillStyle = "#ff3366";
-    ctx.fillRect(cherry.x + 2, cherry.y + 2, grid - 4, grid - 4);
-    ctx.fillStyle = "#ff6699";
-    ctx.fillRect(cherry.x + 8, cherry.y + 4, 4, 4); // highlight
-
-    // Check eat cherry
-    if (snake.x === cherry.x && snake.y === cherry.y) {
-        snake.maxCells++;
-        score += 10;
-        scoreElement.textContent = `Pleasure Points: ${score}`;
-        cherry.x = getRandomInt(0, 20) * grid;
-        cherry.y = getRandomInt(0, 20) * grid;
     }
 
-    // Check collision with self
+    // Glowing shot
+    ctx.fillStyle = "#ff4500";
+    ctx.fillRect(shot.x + 4, shot.y + 4, grid-8, grid-10);
+    ctx.fillStyle = "#ffd700";
+    ctx.fillRect(shot.x + 8, shot.y + 7, grid-16, 7); // liquid shine
+
+    // Eat shot
+    if (snake.x === shot.x && snake.y === shot.y) {
+        snake.maxCells++;
+        score += 15;
+        scoreElement.textContent = `Pleasure Points: ${score}`;
+        shot.x = getRandomInt(0, 19) * grid;
+        shot.y = getRandomInt(0, 19) * grid;
+    }
+
+    // Self collision
     for (let i = 1; i < snake.cells.length; i++) {
         if (snake.x === snake.cells[i].x && snake.y === snake.cells[i].y) {
             gameOverFlag = true;
-            ctx.fillStyle = "rgba(0,0,0,0.7)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "rgba(0,0,0,0.9)";
+            ctx.fillRect(0,0,canvas.width,canvas.height);
             ctx.fillStyle = "#ff3366";
             ctx.font = "bold 32px Arial";
-            ctx.fillText("Game Over!", 70, 180);
+            ctx.fillText("Game Over 😈", 70, 180);
             ctx.font = "20px Arial";
-            ctx.fillText(`You scored ${score} points`, 80, 220);
-            ctx.fillText("Tap to play again", 95, 260);
+            ctx.fillText(`You scored ${score} pleasure`, 75, 230);
+            ctx.fillText("Tap to play again", 100, 270);
         }
     }
 }
 
-// Keyboard controls
+// Keyboard
 document.addEventListener("keydown", e => {
     if (gameOverFlag) { resetGame(); return; }
-    if (e.key === "ArrowLeft" && snake.dx === 0) {
-        snake.dx = -grid; snake.dy = 0;
-    } else if (e.key === "ArrowUp" && snake.dy === 0) {
-        snake.dx = 0; snake.dy = -grid;
-    } else if (e.key === "ArrowRight" && snake.dx === 0) {
-        snake.dx = grid; snake.dy = 0;
-    } else if (e.key === "ArrowDown" && snake.dy === 0) {
-        snake.dx = 0; snake.dy = grid;
-    }
+    if (e.key === "ArrowLeft" && snake.dx !== grid) { snake.dx = -grid; snake.dy = 0; }
+    else if (e.key === "ArrowUp" && snake.dy !== grid) { snake.dx = 0; snake.dy = -grid; }
+    else if (e.key === "ArrowRight" && snake.dx !== -grid) { snake.dx = grid; snake.dy = 0; }
+    else if (e.key === "ArrowDown" && snake.dy !== -grid) { snake.dx = 0; snake.dy = grid; }
 });
 
-// Touch swipe controls (perfect for phone)
+// Touch swipe
 canvas.addEventListener("touchstart", e => {
     if (gameOverFlag) { resetGame(); return; }
     touchStartX = e.changedTouches[0].screenX;
@@ -170,20 +136,15 @@ canvas.addEventListener("touchend", e => {
     const diffY = touchStartY - touchEndY;
 
     if (Math.abs(diffX) > Math.abs(diffY)) {
-        // Horizontal swipe
         if (diffX > 30 && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
         else if (diffX < -30 && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
     } else {
-        // Vertical swipe
         if (diffY > 30 && snake.dy === 0) { snake.dx = 0; snake.dy = -grid; }
         else if (diffY < -30 && snake.dy === 0) { snake.dx = 0; snake.dy = grid; }
     }
 });
 
-// Click/tap to restart after game over
-canvas.addEventListener("click", () => {
-    if (gameOverFlag) resetGame();
-});
+canvas.addEventListener("click", () => { if (gameOverFlag) resetGame(); });
 
 resetGame();
 requestAnimationFrame(loop);
