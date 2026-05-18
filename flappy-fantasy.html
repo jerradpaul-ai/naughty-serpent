@@ -2,79 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Flappy Fantasy</title>
     <style>
         body { margin:0; background:#5c94fc; font-family:Arial; text-align:center; overflow:hidden; color:white; }
         canvas { display:block; margin:20px auto; background:#71c5ee; border:6px solid #fff; box-shadow:0 0 30px rgba(0,0,0,0.4); }
-        #screens { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
-        button { pointer-events:auto; padding:15px 40px; font-size:22px; background:#ffcc00; color:#000; border:none; border-radius:12px; margin:10px; }
+        button { padding:15px 30px; margin:8px; font-size:20px; background:#ffcc00; color:#000; border:none; border-radius:12px; width:280px; }
     </style>
 </head>
 <body>
     <h1 style="margin:15px; text-shadow:3px 3px 6px #000;">Flappy Fantasy 🐉🍄🌈</h1>
     <canvas id="game" width="400" height="600"></canvas>
 
-    <div id="startScreen" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); display:flex; flex-direction:column; justify-content:center; align-items:center;">
+    <div id="startScreen">
         <h2>Choose Your Hero!</h2>
-        <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center;">
-            <button onclick="selectChar(0)">🐉 Yoshi Dragon</button>
-            <button onclick="selectChar(1)">🍄 Cloud Toad</button>
-            <button onclick="selectChar(2)">🌈 Rainbow Birb</button>
-            <button onclick="selectChar(3)">🔥 Fire Sprite</button>
-        </div>
+        <button onclick="selectChar(0)">🐉 Yoshi Dragon</button>
+        <button onclick="selectChar(1)">🍄 Cloud Toad</button>
+        <button onclick="selectChar(2)">🌈 Rainbow Birb</button>
+        <button onclick="selectChar(3)">🔥 Fire Sprite</button>
     </div>
 
-    <div id="gameOverScreen" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); flex-direction:column; justify-content:center; align-items:center;">
+    <div id="gameOverScreen" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);flex-direction:column;justify-content:center;align-items:center;">
         <h2 id="deathMsg"></h2>
-        <p id="scoreText" style="font-size:28px; margin:10px;"></p>
-        <button onclick="restart()">Tap to Fly Again!</button>
+        <p id="scoreText" style="font-size:26px;"></p>
+        <button onclick="restart()" style="background:#ffcc00;">Tap to Fly Again!</button>
     </div>
 
 <script>
-// Game code (same bright Flappy Fantasy as before)
+// Full game code with improved mobile support
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-let birdX = 80, birdY = 250, birdVel = 0, gravity = 0.55, flap = -11.5;
-let pipes = [], score = 0, highScore = 0, gameRunning = false, char = 0;
-let frame = 0;
+let birdX = 80, birdY = 250, birdVel = 0, gravity = 0.55, flapStrength = -11.5;
+let pipes = [], score = 0, highScore = localStorage.getItem("ffHigh") || 0;
+let gameRunning = false, charIndex = 0, frame = 0;
 
-const chars = [
-    {c:"#00cc44", name:"Yoshi Dragon"},
-    {c:"#ffdd00", name:"Cloud Toad"},
-    {c:"#ff44ff", name:"Rainbow Birb"},
-    {c:"#ff5500", name:"Fire Sprite"}
+const characters = [
+    {color:"#00cc44", name:"Yoshi Dragon"},
+    {color:"#ffdd00", name:"Cloud Toad"},
+    {color:"#ff44ff", name:"Rainbow Birb"},
+    {color:"#ff5500", name:"Fire Sprite"}
 ];
 
 function selectChar(n) {
-    char = n;
+    charIndex = n;
     document.getElementById("startScreen").style.display = "none";
-    reset();
+    resetGame();
     gameRunning = true;
 }
 
-function reset() {
+function resetGame() {
     birdY = 250; birdVel = 0; pipes = []; score = 0; frame = 0;
-    pipes.push({x:380, top:180 + Math.random()*140, passed:false});
+    pipes.push({x:380, top:150 + Math.random()*200, passed:false});
 }
 
 function drawBird() {
-    const col = chars[char].c;
-    ctx.fillStyle = col;
+    const c = characters[charIndex].color;
+    ctx.fillStyle = c;
     ctx.fillRect(birdX, birdY, 36, 26);
     ctx.fillStyle = "#fff";
-    ctx.fillRect(birdX+24, birdY+7, 14, 11);
-    ctx.fillStyle = "#000";
-    ctx.fillRect(birdX+28, birdY+10, 7, 7);
+    ctx.fillRect(birdX+24, birdY+8, 14, 11);
 }
 
 function drawPipe(x, top) {
     ctx.fillStyle = "#0b8e3d";
     ctx.fillRect(x, 0, 62, top);
     ctx.fillRect(x, top+170, 62, 600);
-    ctx.fillStyle = "#0a7a33";
-    ctx.fillRect(x-5, top-25, 72, 35);
-    ctx.fillRect(x-5, top+145, 72, 35);
 }
 
 function update() {
@@ -83,24 +75,17 @@ function update() {
     birdVel += gravity;
     birdY += birdVel;
 
-    if (frame % 85 === 0) {
-        const top = 120 + Math.random() * 220;
-        pipes.push({x:420, top:top, passed:false});
-    }
+    if (frame % 85 === 0) pipes.push({x:420, top:120 + Math.random()*220, passed:false});
 
-    for (let i=0; i<pipes.length; i++) {
+    for (let i = 0; i < pipes.length; i++) {
         pipes[i].x -= 2.4;
-        if (!pipes[i].passed && pipes[i].x < birdX) {
-            pipes[i].passed = true;
-            score++;
-        }
-        if (birdX+30 > pipes[i].x && birdX < pipes[i].x+62) {
-            if (birdY < pipes[i].top || birdY+24 > pipes[i].top+170) endGame();
+        if (!pipes[i].passed && pipes[i].x < birdX) { pipes[i].passed = true; score++; }
+        if (birdX + 30 > pipes[i].x && birdX < pipes[i].x + 62) {
+            if (birdY < pipes[i].top || birdY + 24 > pipes[i].top + 170) endGame();
         }
     }
     if (pipes[0] && pipes[0].x < -80) pipes.shift();
-
-    if (birdY > 560 || birdY < -20) endGame();
+    if (birdY > 560 || birdY < 0) endGame();
 }
 
 function draw() {
@@ -108,8 +93,8 @@ function draw() {
     for (let p of pipes) drawPipe(p.x, p.top);
     drawBird();
     ctx.fillStyle = "white";
-    ctx.font = "bold 52px Arial";
-    ctx.fillText(score, 175, 90);
+    ctx.font = "bold 50px Arial";
+    ctx.fillText(score, 170, 90);
 }
 
 function gameLoop() {
@@ -120,22 +105,23 @@ function gameLoop() {
 
 function endGame() {
     gameRunning = false;
-    if (score > highScore) highScore = score;
-    const msgs = ["Oof! Even Bowser is laughing 😂", "You're still a legend! Try again 💪", "The pipes got you this time!", "Flap harder next round hero!", "Nice effort! Keep flying!"];
+    if (score > highScore) { highScore = score; localStorage.setItem("ffHigh", highScore); }
+    const msgs = ["Oof! Even Bowser laughed 😂","Keep flapping hero! 💪","The pipes got you this time!","Nice try adventurer!","Flap harder next round!"];
     document.getElementById("deathMsg").textContent = msgs[Math.floor(Math.random()*msgs.length)];
-    document.getElementById("scoreText").innerHTML = Score: ${score}<br>Best: ${highScore};
+    document.getElementById("scoreText").innerHTML = `Score: ${score}<br>Best: ${highScore}`;
     document.getElementById("gameOverScreen").style.display = "flex";
 }
 
 function restart() {
     document.getElementById("gameOverScreen").style.display = "none";
-    reset();
+    resetGame();
     gameRunning = true;
 }
 
-canvas.addEventListener("click", () => { if (gameRunning) birdVel = flap; });
-canvas.addEventListener("touchstart", e => { e.preventDefault(); if (gameRunning) birdVel = flap; });
+canvas.addEventListener("click", () => { if (gameRunning) birdVel = flapStrength; });
+canvas.addEventListener("touchstart", e => { e.preventDefault(); if (gameRunning) birdVel = flapStrength; });
 
+resetGame();
 gameLoop();
 </script>
 </body>
