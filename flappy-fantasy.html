@@ -2,125 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Flappy Fantasy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Test</title>
     <style>
-        body { margin:0; background:#5c94fc; font-family:Arial; text-align:center; color:white; overflow:hidden; }
-        canvas { display:block; margin:0 auto; background:#71c5ee; border-bottom:6px solid white; }
-        h1 { margin:10px; text-shadow:3px 3px 6px #000; }
+        body { margin:0; background:#5c94fc; text-align:center; color:white; }
+        canvas { display:block; margin:20px auto; background:#71c5ee; border:4px solid white; }
     </style>
 </head>
 <body>
-    <h1>Flappy Fantasy 🐉</h1>
+    <h1>Flappy Test 🐉</h1>
     <canvas id="game" width="400" height="600"></canvas>
-    <div style="margin-top:10px; font-size:18px;">Tap screen to flap</div>
+    <p>Tap the screen to flap</p>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let birdY = 300;
-let birdVel = 0;
-let gravity = 0.6;
-let flapStrength = -13;
-let pipes = [];
-let score = 0;
-let gameRunning = true;
-let frame = 0;
-
-function reset() {
-    birdY = 300;
-    birdVel = 0;
-    pipes = [{x: 350, top: 200}];
-    score = 0;
-    frame = 0;
-}
+let y = 300;
+let vel = 0;
 
 function draw() {
     ctx.clearRect(0, 0, 400, 600);
-
-    // Draw pipes
-    ctx.fillStyle = "#0b8e3d";
-    for (let p of pipes) {
-        ctx.fillRect(p.x, 0, 70, p.top);
-        ctx.fillRect(p.x, p.top + 180, 70, 600);
-    }
-
-    // Draw bird
     ctx.fillStyle = "#00cc44";
-    ctx.fillRect(80, birdY, 40, 30);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(105, birdY + 8, 18, 12);
-
-    // Score
-    ctx.fillStyle = "white";
-    ctx.font = "bold 48px Arial";
-    ctx.fillText(score, 170, 80);
+    ctx.fillRect(80, y, 40, 30);
 }
 
-function update() {
-    if (!gameRunning) return;
-    frame++;
-
-    birdVel += gravity;
-    birdY += birdVel;
-
-    // Spawn pipes
-    if (frame % 75 === 0) {
-        const top = 120 + Math.random() * 220;
-        pipes.push({x: 420, top: top});
-    }
-
-    // Move pipes
-    for (let i = 0; i < pipes.length; i++) {
-        pipes[i].x -= 2.8;
-
-        // Score
-        if (pipes[i].x + 70 < 80 && !pipes[i].passed) {
-            pipes[i].passed = true;
-            score++;
-        }
-
-        // Collision
-        if (80 + 40 > pipes[i].x && 80 < pipes[i].x + 70) {
-            if (birdY < pipes[i].top || birdY + 30 > pipes[i].top + 180) {
-                gameRunning = false;
-                alert("Game Over! Score: " + score + "\n\nTap OK to restart");
-                reset();
-                gameRunning = true;
-            }
-        }
-    }
-
-    // Remove old pipes
-    if (pipes.length > 0 && pipes[0].x < -80) pipes.shift();
-
-    // Ground / ceiling
-    if (birdY > 550 || birdY < 0) {
-        gameRunning = false;
-        alert("Game Over! Score: " + score + "\n\nTap OK to restart");
-        reset();
-        gameRunning = true;
-    }
-}
-
-function flap() {
-    if (gameRunning) birdVel = flapStrength;
-}
-
-canvas.addEventListener("click", flap);
-canvas.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    flap();
-});
-
-reset();
-
-// Game loop
-setInterval(() => {
-    update();
+function loop() {
+    vel += 0.6;
+    y += vel;
+    if (y > 550) y = 300, vel = 0;
     draw();
-}, 20);
+    requestAnimationFrame(loop);
+}
+
+canvas.addEventListener("click", () => vel = -13);
+canvas.addEventListener("touchstart", e => { e.preventDefault(); vel = -13; });
+
+loop();
 </script>
 </body>
 </html>
