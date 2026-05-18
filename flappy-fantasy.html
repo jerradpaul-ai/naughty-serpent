@@ -21,7 +21,7 @@ const ctx = canvas.getContext("2d");
 let birdY = 250;
 let velocity = 0;
 const gravity = 0.5;
-const flapPower = -12;
+const flapPower = -9;   // <-- Easier flap (was -12.5)
 
 let pipes = [];
 let score = 0;
@@ -39,15 +39,11 @@ function reset() {
 function draw() {
     ctx.clearRect(0, 0, 400, 600);
 
-    // Big bright pipes
+    // Pipes
     ctx.fillStyle = "#00aa00";
     for (let p of pipes) {
         ctx.fillRect(p.x, 0, 80, p.top);
         ctx.fillRect(p.x, p.top + 200, 80, 600);
-        ctx.fillStyle = "#008800";
-        ctx.fillRect(p.x - 5, p.top - 30, 90, 40);
-        ctx.fillRect(p.x - 5, p.top + 170, 90, 40);
-        ctx.fillStyle = "#00aa00";
     }
 
     // Bird
@@ -72,7 +68,7 @@ function update() {
     }
 
     for (let i = 0; i < pipes.length; i++) {
-        pipes[i].x -= 2.2;   // slower pipes
+        pipes[i].x -= 2.2;
 
         if (pipes[i].x + 80 < 80 && !pipes[i].passed) {
             pipes[i].passed = true;
